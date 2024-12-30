@@ -153,6 +153,10 @@ export default function App() {
     });
   };
 
+  const closeEventDetails = () => {
+    setSelectedEvent(null);
+  };
+
   return (
     <div className="min-h-screen bg-gray-100 p-4">
       <div className="mb-4">
@@ -165,65 +169,61 @@ export default function App() {
         </button>
       </div>
       <div className="flex gap-4">
-        <div className="flex-1 bg-white shadow-md rounded-lg p-4">
-          <FullCalendar
-            ref={calendarRef}
-            plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
-            headerToolbar={{
-              left: "prev,next today",
-              center: "title",
-              right:
-                "dayGridMonth,timeGridWeek,timeGridDay,threeDay,fourDay,fiveDay",
-            }}
-            initialView="timeGridWeek"
-            editable
-            selectable
-            selectMirror
-            dayMaxEvents
-            allDaySlot={false}
-            weekends={weekendsVisible}
-            initialEvents={INITIAL_EVENTS}
-            select={handleDateSelect}
-            eventContent={renderEventContent}
-            eventClick={handleEventClick}
-            eventsSet={handleEvents}
-            eventDrop={handleEventDrop}
-            eventReceive={handleEventReceive}
-            nowIndicator={true}
-            
-            height="85vh"
-            // slotMinTime="00:00:00"
-            // slotDuration="00:15:00"
-            contentHeight="auto"
-            views={{
-              threeDay: {
-                type: "timeGrid",
-                duration: { days: 3 },
-              },
-              fourDay: {
-                type: "timeGrid",
-                duration: { days: 4 },
-              },
-              fiveDay: {
-                type: "timeGrid",
-                duration: { days: 5 },
-              },
-            }}
-          />
-        </div>
-        <div className="w-1/3 bg-white shadow-md rounded-lg p-4">
-          {/* Conditionally render EventDetails */}
-          <EventDetails event={selectedEvent} />
-        </div>
-      </div>
-      {modalOpen && (
-        <EventModal
-          modalData={modalData}
-          setModalData={setModalData}
-          handleModalSubmit={handleManualEventAdd}
-          closeModal={closeModal}
-        />
-      )}
+  <div className={`flex-1 bg-white shadow-md rounded-lg p-4 transition-all duration-300 ${selectedEvent ? 'w-2/3' : 'w-full'}`}>
+    <FullCalendar
+      ref={calendarRef}
+      plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
+      headerToolbar={{
+        left: "prev,next today",
+        center: "title",
+        right:
+          "dayGridMonth,timeGridWeek,timeGridDay,threeDay,fourDay,fiveDay",
+      }}
+      initialView="timeGridWeek"
+      editable
+      selectable
+      selectMirror
+      dayMaxEvents
+      allDaySlot={false}
+      weekends={weekendsVisible}
+      initialEvents={INITIAL_EVENTS}
+      select={handleDateSelect}
+      eventContent={renderEventContent}
+      eventClick={handleEventClick}
+      eventsSet={handleEvents}
+      eventDrop={handleEventDrop}
+      eventReceive={handleEventReceive}
+      nowIndicator={true}
+      height="85vh"
+      contentHeight="auto"
+      views={{
+        threeDay: {
+          type: "timeGrid",
+          duration: { days: 3 },
+        },
+        fourDay: {
+          type: "timeGrid",
+          duration: { days: 4 },
+        },
+        fiveDay: {
+          type: "timeGrid",
+          duration: { days: 5 },
+        },
+      }}
+    />
+  </div>
+  {selectedEvent && (
+    <div className="w-1/3 bg-white shadow-md rounded-lg p-4 animate-fade-in">
+      <button
+        onClick={() => setSelectedEvent(null)}
+        className="mb-4 px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600"
+      >
+        Close
+      </button>
+      <EventDetails event={selectedEvent} />
+    </div>
+  )}
+</div>
     </div>
   );
 }
