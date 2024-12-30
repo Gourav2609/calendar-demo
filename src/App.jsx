@@ -170,9 +170,6 @@ export default function App() {
             eventDrop={handleEventDrop}
             eventReceive={handleEventReceive}
             nowIndicator={true}
-            slotMinTime="06:00:00"
-            slotMaxTime="21:00:00"
-            scrollTime="08:00:00"
             height="80vh"
           />
         </div>
