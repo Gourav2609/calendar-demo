@@ -1,3 +1,42 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Add these styles to your CSS file or global styles */
+
+/* Increase row height for day/week views */
+.fc-time-grid .fc-slats td {
+  height: 60px; /* Adjust the height of the time slots */
+}
+
+/* Optional: Set a minimum height for events */
+/* .fc-time-grid-event {
+  min-height: 90px ;
+  padding: 5px 10px; 
+  display: flex;
+  align-items: center;
+} */
+.fc .fc-timegrid-slot-label{
+    height: 50px;
+}
+/* Event styles */
+.fc-event {
+  overflow: hidden; /* Hide overflow for event content */
+  /* border-radius: 8px; Add rounded corners */
+}
+
+.fc-event .fc-event-title {
+  white-space: nowrap; /* Prevent title from wrapping */
+  overflow: hidden;
+  text-overflow: ellipsis; /* Add ellipsis if title is too long */
+}
+
+.fc-event.custom-event {
+  background-color: #4c6ef5; /* Custom background color */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Custom shadow */
+  color: #fff; /* White text color */
+}
+
+.fc-event.custom-event .fc-event-title {
+  font-weight: bold; /* Bold title */
+}

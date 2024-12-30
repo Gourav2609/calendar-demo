@@ -3,18 +3,20 @@ import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
-import { formatDate } from "@fullcalendar/core";
 import { Plus } from "lucide-react";
+import Sidebar from "./components/SideBar";
+import EventModal from "./components/EventModal";
+import EventDetails from "./components/EventDetails"; // Import EventDetails
+import { formatDate } from "@fullcalendar/core"; // Import formatDate
 
-// Utility functions for event handling
 const createEventId = () => String(new Date().getTime());
 
 const INITIAL_EVENTS = [
   {
     id: createEventId(),
-    title: 'Sample Event',
+    title: "Sample Event",
     start: new Date().toISOString(),
-  }
+  },
 ];
 
 const MAX_CONCURRENT_EVENTS = 5;
@@ -25,27 +27,30 @@ export default function App() {
   const [modalOpen, setModalOpen] = useState(false);
   const [modalData, setModalData] = useState({
     title: "",
-    date: new Date().toISOString().split('T')[0],
+    date: new Date().toISOString().split("T")[0],
     startTime: "09:00",
-    endTime: "10:00"
+    endTime: "10:00",
   });
+  const [selectedEvent, setSelectedEvent] = useState(null); // Store selected event
   const calendarRef = useRef(null);
 
   const checkEventLimit = (startTime, excludeEventId = null) => {
     if (!calendarRef.current) return true;
-    
+
     const calendarApi = calendarRef.current.getApi();
     const events = calendarApi.getEvents();
-    const concurrentEvents = events.filter(event => {
+    const concurrentEvents = events.filter((event) => {
       if (excludeEventId && event.id === excludeEventId) return false;
-      
+
       const eventStart = new Date(event.start);
       const newEventStart = new Date(startTime);
-      return eventStart.getHours() === newEventStart.getHours() &&
-             eventStart.getMinutes() === newEventStart.getMinutes() &&
-             eventStart.getDate() === newEventStart.getDate() &&
-             eventStart.getMonth() === newEventStart.getMonth() &&
-             eventStart.getFullYear() === newEventStart.getFullYear();
+      return (
+        eventStart.getHours() === newEventStart.getHours() &&
+        eventStart.getMinutes() === newEventStart.getMinutes() &&
+        eventStart.getDate() === newEventStart.getDate() &&
+        eventStart.getMonth() === newEventStart.getMonth() &&
+        eventStart.getFullYear() === newEventStart.getFullYear()
+      );
     });
     return concurrentEvents.length < MAX_CONCURRENT_EVENTS;
   };
@@ -60,29 +65,37 @@ export default function App() {
 
     setModalData({
       ...modalData,
-      date: selectInfo.startStr.split('T')[0],
-      startTime: selectInfo.startStr.split('T')[1]?.slice(0, 5) || "09:00",
-      endTime: selectInfo.endStr.split('T')[1]?.slice(0, 5) || "10:00"
+      date: selectInfo.startStr.split("T")[0],
+      startTime: selectInfo.startStr.split("T")[1]?.slice(0, 5) || "09:00",
+      endTime: selectInfo.endStr.split("T")[1]?.slice(0, 5) || "10:00",
     });
     setModalOpen(true);
   };
 
   const handleEventClick = (clickInfo) => {
-    if (confirm(`Are you sure you want to delete the event '${clickInfo.event.title}'?`)) {
-      clickInfo.event.remove();
-    }
+    const event = clickInfo.event;
+    setSelectedEvent({
+      title: event.title,
+      start: formatDate(event.start, { hour: "2-digit", minute: "2-digit" }), // Format start time
+      end: formatDate(event.end, { hour: "2-digit", minute: "2-digit" }), // Format end time
+      description: event.extendedProps.description || "No description",
+    });
   };
 
   const handleEventDrop = (dropInfo) => {
     if (!checkEventLimit(dropInfo.event.start, dropInfo.event.id)) {
-      alert(`Cannot move event. Maximum ${MAX_CONCURRENT_EVENTS} events allowed per time slot.`);
+      alert(
+        `Cannot move event. Maximum ${MAX_CONCURRENT_EVENTS} events allowed per time slot.`
+      );
       dropInfo.revert();
     }
   };
 
   const handleEventReceive = (receiveInfo) => {
     if (!checkEventLimit(receiveInfo.event.start)) {
-      alert(`Cannot add event. Maximum ${MAX_CONCURRENT_EVENTS} events allowed per time slot.`);
+      alert(
+        `Cannot add event. Maximum ${MAX_CONCURRENT_EVENTS} events allowed per time slot.`
+      );
       receiveInfo.revert();
     }
   };
@@ -92,7 +105,12 @@ export default function App() {
   };
 
   const handleManualEventAdd = () => {
-    if (!modalData.title || !modalData.date || !modalData.startTime || !modalData.endTime) {
+    if (
+      !modalData.title ||
+      !modalData.date ||
+      !modalData.startTime ||
+      !modalData.endTime
+    ) {
       alert("Please fill in all fields");
       return;
     }
@@ -106,11 +124,16 @@ export default function App() {
     }
 
     if (!checkEventLimit(startDateTime)) {
-      alert(`Cannot add more than ${MAX_CONCURRENT_EVENTS} events at the same time slot`);
+      alert(
+        `Cannot add more than ${MAX_CONCURRENT_EVENTS} events at the same time slot`
+      );
       return;
     }
 
     const calendarApi = calendarRef.current.getApi();
+
+    // console.log("calendarApi", calendarApi);
+
     calendarApi.addEvent({
       id: createEventId(),
       title: modalData.title,
@@ -124,9 +147,9 @@ export default function App() {
     setModalOpen(false);
     setModalData({
       title: "",
-      date: new Date().toISOString().split('T')[0],
+      date: new Date().toISOString().split("T")[0],
       startTime: "09:00",
-      endTime: "10:00"
+      endTime: "10:00",
     });
   };
 
@@ -142,11 +165,6 @@ export default function App() {
         </button>
       </div>
       <div className="flex gap-4">
-        <Sidebar
-          weekendsVisible={weekendsVisible}
-          handleWeekendsToggle={handleWeekendsToggle}
-          currentEvents={currentEvents}
-        />
         <div className="flex-1 bg-white shadow-md rounded-lg p-4">
           <FullCalendar
             ref={calendarRef}
@@ -154,13 +172,15 @@ export default function App() {
             headerToolbar={{
               left: "prev,next today",
               center: "title",
-              right: "dayGridMonth,timeGridWeek,timeGridDay",
+              right:
+                "dayGridMonth,timeGridWeek,timeGridDay,threeDay,fourDay,fiveDay",
             }}
             initialView="timeGridWeek"
             editable
             selectable
             selectMirror
             dayMaxEvents
+            allDaySlot={false}
             weekends={weekendsVisible}
             initialEvents={INITIAL_EVENTS}
             select={handleDateSelect}
@@ -170,8 +190,30 @@ export default function App() {
             eventDrop={handleEventDrop}
             eventReceive={handleEventReceive}
             nowIndicator={true}
-            height="80vh"
+            
+            height="85vh"
+            // slotMinTime="00:00:00"
+            // slotDuration="00:15:00"
+            contentHeight="auto"
+            views={{
+              threeDay: {
+                type: "timeGrid",
+                duration: { days: 3 },
+              },
+              fourDay: {
+                type: "timeGrid",
+                duration: { days: 4 },
+              },
+              fiveDay: {
+                type: "timeGrid",
+                duration: { days: 5 },
+              },
+            }}
           />
+        </div>
+        <div className="w-1/3 bg-white shadow-md rounded-lg p-4">
+          {/* Conditionally render EventDetails */}
+          <EventDetails event={selectedEvent} />
         </div>
       </div>
       {modalOpen && (
@@ -186,113 +228,13 @@ export default function App() {
   );
 }
 
-function Sidebar({ weekendsVisible, handleWeekendsToggle, currentEvents }) {
-  return (
-    <div className="w-64 bg-white shadow-md rounded-lg p-4">
-      <h2 className="text-lg font-bold mb-4">Instructions</h2>
-      <ul className="list-disc list-inside mb-4 text-gray-600">
-        <li>Select dates to create events</li>
-        <li>Drag and drop to move events</li>
-        <li>Click event to delete</li>
-      </ul>
-      <div className="mb-4">
-        <label className="flex items-center">
-          <input
-            type="checkbox"
-            className="mr-2"
-            checked={weekendsVisible}
-            onChange={handleWeekendsToggle}
-          />
-          <span className="text-gray-700">Toggle weekends</span>
-        </label>
-      </div>
-      <h2 className="text-lg font-bold mb-2">All Events ({currentEvents.length})</h2>
-      <ul className="text-gray-600 space-y-1">
-        {currentEvents.map((event) => (
-          <SidebarEvent key={event.id} event={event} />
-        ))}
-      </ul>
-    </div>
-  );
-}
-
-function SidebarEvent({ event }) {
-  return (
-    <li>
-      <b>{formatDate(event.start, { year: "numeric", month: "short", day: "numeric" })}</b>
-      <i className="ml-2">{event.title}</i>
-    </li>
-  );
-}
-
 function renderEventContent(eventInfo) {
   return (
-    <div>
-      <b>{eventInfo.timeText}</b>
-      <i className="ml-1">{eventInfo.event.title}</i>
+    <div className="">
+      <i className="">{eventInfo.event.title}</i>
+      {" "}
+      <b className="">{eventInfo.timeText}</b>
     </div>
   );
 }
 
-function EventModal({ modalData, setModalData, handleModalSubmit, closeModal }) {
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white p-6 rounded-lg shadow-md w-96">
-        <h2 className="text-xl font-bold mb-4">Create Event</h2>
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
-            <input
-              type="text"
-              value={modalData.title}
-              onChange={(e) => setModalData({ ...modalData, title: e.target.value })}
-              className="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Event title"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Date</label>
-            <input
-              type="date"
-              value={modalData.date}
-              onChange={(e) => setModalData({ ...modalData, date: e.target.value })}
-              className="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Start Time</label>
-            <input
-              type="time"
-              value={modalData.startTime}
-              onChange={(e) => setModalData({ ...modalData, startTime: e.target.value })}
-              className="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">End Time</label>
-            <input
-              type="time"
-              value={modalData.endTime}
-              onChange={(e) => setModalData({ ...modalData, endTime: e.target.value })}
-              className="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-        </div>
-        <div className="flex justify-end space-x-2 mt-6">
-          <button
-            className="px-4 py-2 bg-gray-300 text-gray-800 rounded-md hover:bg-gray-400"
-            onClick={closeModal}
-          >
-            Cancel
-          </button>
-          <button
-            className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
-            onClick={handleModalSubmit}
-          >
-            Save
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
