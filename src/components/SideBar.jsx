@@ -1,4 +1,4 @@
-import SidebarEvent from "./SidebarEvent";
+import SidebarEvent from "./SideBarEvent";
 
 function Sidebar({ weekendsVisible, handleWeekendsToggle, currentEvents }) {
   return (
